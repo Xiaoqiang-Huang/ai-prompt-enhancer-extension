@@ -1,6 +1,6 @@
 ﻿import { collectChatMessages, exportConversation } from '@/content/chat-export'
 import { detectSensitiveText } from '@/content/detector/sensitive-detector'
-import { findBestEditableAdapter, resolveEditableAdapter } from '@/content/detector/input-detector'
+import { findBestEditableAdapter, isAiChatHost, resolveEditableAdapter } from '@/content/detector/input-detector'
 import { FloatingButton } from '@/content/overlay/floating-button'
 import { PreviewDialog } from '@/content/overlay/preview-dialog'
 import { QuickActionPanel } from '@/content/overlay/quick-action-panel'
@@ -108,6 +108,12 @@ class PromptEnhancerContentApp {
     }, delayMs)
   }
 
+  private hideLauncherControls() {
+    this.adapter = null
+    this.floatingButton.hide()
+    this.quickActionPanel.hide()
+  }
+
   private async loadLauncherConfig() {
     const settings = await settingsStore.get()
     this.launcherEnabled = settings.launcher.enabled
@@ -130,14 +136,18 @@ class PromptEnhancerContentApp {
   }
 
   private syncActiveAdapter() {
+    if (!isAiChatHost(location.hostname)) {
+      this.hideLauncherControls()
+      return
+    }
+
     const nextAdapter =
       resolveEditableAdapter(document.activeElement) ??
       (this.adapter && this.adapter.getElement().isConnected ? this.adapter : null) ??
       findBestEditableAdapter(document)
 
     if (!nextAdapter || !this.launcherEnabled) {
-      this.floatingButton.hide()
-      this.quickActionPanel.hide()
+      this.hideLauncherControls()
       return
     }
 
@@ -145,8 +155,7 @@ class PromptEnhancerContentApp {
     const text = this.adapter.getText()
     const sensitive = this.sensitiveScanEnabled ? detectSensitiveText(text, this.adapter.getElement()) : { blocked: false }
     if (sensitive.blocked) {
-      this.floatingButton.hide()
-      this.quickActionPanel.hide()
+      this.hideLauncherControls()
       return
     }
     this.layoutLauncherControls()
@@ -154,6 +163,10 @@ class PromptEnhancerContentApp {
   }
 
   private handleFocus = (event: FocusEvent) => {
+    if (!isAiChatHost(location.hostname)) {
+      this.hideLauncherControls()
+      return
+    }
     if (event.target instanceof HTMLElement && event.target.closest('[data-ape-root]')) {
       return
     }
@@ -166,8 +179,7 @@ class PromptEnhancerContentApp {
     const text = this.adapter.getText()
     const sensitive = this.sensitiveScanEnabled ? detectSensitiveText(text, this.adapter.getElement()) : { blocked: false }
     if (sensitive.blocked) {
-      this.floatingButton.hide()
-      this.quickActionPanel.hide()
+      this.hideLauncherControls()
       return
     }
     this.layoutLauncherControls()
@@ -175,6 +187,10 @@ class PromptEnhancerContentApp {
   }
 
   private handleInput = (event: Event) => {
+    if (!isAiChatHost(location.hostname)) {
+      this.hideLauncherControls()
+      return
+    }
     if (event.target instanceof HTMLElement && event.target.closest('[data-ape-root]')) return
     const nextAdapter = resolveEditableAdapter(event.target)
     if (nextAdapter) {
@@ -182,8 +198,7 @@ class PromptEnhancerContentApp {
       const text = this.adapter.getText()
       const sensitive = this.sensitiveScanEnabled ? detectSensitiveText(text, this.adapter.getElement()) : { blocked: false }
       if (sensitive.blocked) {
-        this.floatingButton.hide()
-        this.quickActionPanel.hide()
+        this.hideLauncherControls()
         return
       }
       if (this.launcherEnabled) {
@@ -201,6 +216,10 @@ class PromptEnhancerContentApp {
   }
 
   private repositionFloatingButton = () => {
+    if (!isAiChatHost(location.hostname)) {
+      this.hideLauncherControls()
+      return
+    }
     if (!this.launcherEnabled) return
     if (!this.adapter || !this.adapter.getElement().isConnected) {
       this.scheduleSync(60)
@@ -278,6 +297,10 @@ class PromptEnhancerContentApp {
   }
 
   private async enhanceCurrentAdapter(mode?: EnhanceMode, copyOnly?: boolean, skillId?: string): Promise<void> {
+    if (!isAiChatHost(location.hostname)) {
+      this.hideLauncherControls()
+      return
+    }
     const activeAdapter = resolveEditableAdapter(document.activeElement) ?? findBestEditableAdapter(document)
     if (activeAdapter) {
       this.adapter = activeAdapter

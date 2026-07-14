@@ -1,4 +1,4 @@
-﻿import { findBestEditableAdapter } from '@/content/detector/input-detector'
+﻿import { findBestEditableAdapter, isAiChatHost } from '@/content/detector/input-detector'
 
 const mockVisibleRect = (element: Element, top = 120, left = 120) => {
   Object.defineProperty(element, 'getBoundingClientRect', {
@@ -70,13 +70,20 @@ describe('findBestEditableAdapter', () => {
     expect(adapter?.getElement()).toBe(claude)
   })
 
-  it('falls back to generic textarea when no site-specific rule matches', () => {
-    document.body.innerHTML = '<textarea id="fallback-input"></textarea>'
-    const fallback = document.getElementById('fallback-input') as HTMLTextAreaElement
-    mockVisibleRect(fallback, 100, 100)
+  it('does not attach to generic inputs on non-AI hosts', () => {
+    document.body.innerHTML = '<input id="go-to-file" type="search" placeholder="Go to file" />'
+    const input = document.getElementById('go-to-file') as HTMLInputElement
+    mockVisibleRect(input, 100, 100)
 
-    const adapter = findBestEditableAdapter(document, 'example.com')
+    expect(findBestEditableAdapter(document, 'github.com')).toBeNull()
+    expect(isAiChatHost('github.com')).toBe(false)
+  })
 
-    expect(adapter?.getElement()).toBe(fallback)
+  it('allows only supported AI chat hosts', () => {
+    expect(isAiChatHost('chatgpt.com')).toBe(true)
+    expect(isAiChatHost('chat.deepseek.com')).toBe(true)
+    expect(isAiChatHost('gemini.google.com')).toBe(true)
+    expect(isAiChatHost('copilot.microsoft.com')).toBe(true)
+    expect(isAiChatHost('mail.google.com')).toBe(false)
   })
 })

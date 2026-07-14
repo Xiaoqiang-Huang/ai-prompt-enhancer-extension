@@ -4,6 +4,24 @@ import { MonacoAdapter } from '@/content/adapters/monaco-adapter'
 import { NativeInputAdapter } from '@/content/adapters/native-input-adapter'
 import type { EditableAdapter } from '@/shared/types'
 
+const AI_CHAT_HOSTS = new Set([
+  'chatgpt.com',
+  'chat.openai.com',
+  'claude.ai',
+  'gemini.google.com',
+  'copilot.microsoft.com',
+])
+
+/**
+ * The content script also runs on a few non-chat sites for conversation export
+ * and other explicitly requested features. The launcher must only attach to
+ * supported AI chat composers, never to arbitrary web inputs.
+ */
+export const isAiChatHost = (hostname = window.location.hostname): boolean => {
+  const normalized = hostname.toLowerCase().split(':')[0]
+  return AI_CHAT_HOSTS.has(normalized) || normalized === 'chat.deepseek.com' || normalized.endsWith('.deepseek.com')
+}
+
 const SITE_SPECIFIC_SELECTORS: Array<{
   match: (hostname: string) => boolean
   selectors: string[]
@@ -38,6 +56,26 @@ const SITE_SPECIFIC_SELECTORS: Array<{
       'div[contenteditable="true"][role="textbox"]',
       'textarea[placeholder*="Claude"]',
       'textarea[placeholder*="消息"]',
+    ],
+  },
+  {
+    match: (hostname) => hostname === 'gemini.google.com',
+    selectors: [
+      'rich-textarea [contenteditable="true"]',
+      'div[contenteditable="true"][role="textbox"]',
+      'textarea[placeholder*="message" i]',
+      'textarea[placeholder*="消息"]',
+      'div[contenteditable="true"]',
+    ],
+  },
+  {
+    match: (hostname) => hostname === 'copilot.microsoft.com',
+    selectors: [
+      'textarea[placeholder*="Message" i]',
+      'textarea[placeholder*="Ask" i]',
+      'textarea[placeholder*="消息"]',
+      'div[contenteditable="true"][role="textbox"]',
+      'div[contenteditable="true"]',
     ],
   },
 ]
@@ -144,6 +182,10 @@ export const findBestEditableAdapter = (
   root: ParentNode = document,
   hostname = window.location.hostname,
 ): EditableAdapter | null => {
+  if (!isAiChatHost(hostname)) {
+    return null
+  }
+
   const siteSpecific = findSiteSpecificAdapter(root, hostname)
   if (siteSpecific) {
     return siteSpecific
