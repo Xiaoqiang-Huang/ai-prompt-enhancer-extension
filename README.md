@@ -34,6 +34,16 @@
 
 ## 安装
 
+### 下载 Release 安装包（推荐）
+
+从 [Releases](https://github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension/releases) 下载最新的 `ai-prompt-enhancer-extension-*-cws.zip`，解压后：
+
+1. 打开 Chrome 的 `chrome://extensions`，开启“开发者模式”。
+2. 点击“加载已解压的扩展程序”。
+3. 选择解压后的文件夹（该文件夹根目录应直接包含 `manifest.json`）。
+
+更新版本时，删除或停用旧的扩展目录，再加载新的解压目录即可。Release 安装包只包含构建后的扩展，不包含源码、`node_modules` 或本地测试数据。
+
 ### 从源码加载
 
 1. 安装 Node.js 20+。
