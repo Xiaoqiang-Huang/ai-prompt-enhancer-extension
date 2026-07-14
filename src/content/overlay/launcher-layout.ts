@@ -64,6 +64,14 @@ const containsRect = (container: DOMRect, inner: DOMRect, tolerance = 4) =>
   container.top <= inner.top + tolerance &&
   container.bottom >= inner.bottom - tolerance
 
+const hasInternalScroll = (element: HTMLElement) => {
+  const scrollableHeight = element.scrollHeight > element.clientHeight + 4
+  const scrollableWidth = element.scrollWidth > element.clientWidth + 4
+  const computed = window.getComputedStyle(element)
+  const overflowScroll = ['auto', 'scroll', 'overlay'].includes(computed.overflowY) || ['auto', 'scroll', 'overlay'].includes(computed.overflowX)
+  return scrollableHeight || scrollableWidth || overflowScroll
+}
+
 /**
  * Reject page-wide forms and layout shells. Anchoring to those nodes makes the
  * controls clamp back into the composer when there is no room at the viewport
@@ -110,6 +118,11 @@ export const resolveLauncherAnchorRect = (
 ): DOMRect => {
   const editableRect = element.getBoundingClientRect()
   if (!isUsableRect(editableRect)) return editableRect
+
+  // When the editable itself owns an internal scrollbar, ancestor rects can
+  // move with the scrolled content on SPA composers. Anchor to the visible
+  // editable frame instead of chasing a moving form/container.
+  if (hasInternalScroll(element)) return editableRect
 
   const rule = SITE_CONTAINER_SELECTORS.find((item) => item.match(hostname))
   const selectors = rule

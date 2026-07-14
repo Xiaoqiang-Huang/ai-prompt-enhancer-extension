@@ -96,6 +96,29 @@ describe('launcher layout', () => {
     expect(rect.right).toBe(800)
   })
 
+  it('anchors to the visible editable frame when the input owns an internal scrollbar', () => {
+    document.body.innerHTML = `
+      <form id="composer-form">
+        <textarea id="prompt-textarea"></textarea>
+      </form>
+    `
+
+    const form = document.getElementById('composer-form') as HTMLElement
+    const textarea = document.getElementById('prompt-textarea') as HTMLTextAreaElement
+    mockRect(form, { left: 40, right: 980, top: 20, bottom: 780, width: 940, height: 760 })
+    mockRect(textarea, { left: 300, right: 900, top: 420, bottom: 500, width: 600, height: 80 })
+    Object.defineProperties(textarea, {
+      scrollHeight: { configurable: true, value: 1200 },
+      clientHeight: { configurable: true, value: 80 },
+    })
+
+    const rect = resolveLauncherAnchorRect(textarea, 'chatgpt.com')
+
+    expect(rect.left).toBe(300)
+    expect(rect.top).toBe(420)
+    expect(rect.right).toBe(900)
+  })
+
   it('keeps the entire launcher cluster to the right when it fits', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1400 })
     const anchor = domRect(300, 900, 400, 500)
