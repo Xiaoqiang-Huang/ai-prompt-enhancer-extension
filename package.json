@@ -2,7 +2,7 @@
   "name": "ai-prompt-enhancer-extension",
   "description": "A privacy-first Chrome extension for enhancing prompts with Skills and multiple AI providers.",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "keywords": ["chrome-extension", "prompt-engineering", "ai", "productivity", "typescript"],
   "type": "module",
