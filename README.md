@@ -84,7 +84,7 @@ npm run build
 npm run test:e2e
 ```
 
-E2E 使用本地 fixture 和本地 mock Provider，不调用真实 OpenAI、Claude、Gemini 或其他第三方 API。发布前检查清单见 [docs/release-checklist.md](docs/release-checklist.md)，项目介绍文章见 [docs/blog-bilibili-entry.md](docs/blog-bilibili-entry.md)。
+E2E 使用本地 fixture 和本地 mock Provider，不调用真实 OpenAI、Claude、Gemini 或其他第三方 API。发布前检查清单见 [docs/release-checklist.md](docs/release-checklist.md)。
 
 ## 安全边界
 
