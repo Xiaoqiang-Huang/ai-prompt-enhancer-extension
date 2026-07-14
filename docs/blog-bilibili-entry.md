@@ -89,7 +89,7 @@ Local Storage：设置、Skill、个人提示词库、历史、加密后的 API 
 
 ## 六、开源和后续计划
 
-项目地址：**GitHub 仓库地址将在首次公开后补充**。
+项目地址：[GitHub - Xiaoqiang-Huang/ai-prompt-enhancer-extension](https://github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension)
 
 后续我希望和社区一起完善：
 

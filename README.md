@@ -4,6 +4,8 @@
 
 > 当前版本：`0.1.0` · 开源协议：MIT · 不需要后端服务
 
+项目地址：[github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension](https://github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension)
+
 ## 为什么做它
 
 很多时候，问题不是“不会问”，而是不知道如何把目标、上下文、约束、输出格式和验收标准说清楚。AI Prompt Enhancer 不直接替换用户原文，而是先生成并展示一份可审阅的优化结果，由用户决定接受、拒绝、继续优化或部分接受。
