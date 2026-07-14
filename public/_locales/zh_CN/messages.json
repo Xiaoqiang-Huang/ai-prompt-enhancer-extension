@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "AI Prompt Enhancer"
+  },
+  "appDescription": {
+    "message": "中文优先、显式触发、本地保存的 Prompt 增强与管理扩展。"
+  },
+  "commandEnhanceCurrentInput": {
+    "message": "增强当前输入"
+  },
+  "commandOpenPromptLibrary": {
+    "message": "打开 Prompt 库"
+  }
+}

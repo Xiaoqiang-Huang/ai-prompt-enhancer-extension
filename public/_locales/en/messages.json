@@ -1,0 +1,14 @@
+{
+  "appName": {
+    "message": "AI Prompt Enhancer"
+  },
+  "appDescription": {
+    "message": "A Chinese-first, privacy-first prompt enhancement and management extension."
+  },
+  "commandEnhanceCurrentInput": {
+    "message": "Enhance current input"
+  },
+  "commandOpenPromptLibrary": {
+    "message": "Open prompt library"
+  }
+}
