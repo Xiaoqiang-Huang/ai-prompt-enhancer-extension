@@ -47,6 +47,7 @@ const SUPPORTED_PAGE_HOSTS = new Set([
   'notion.so',
 ])
 const E2E_MOCK_RESPONSE_KEY = 'ape_e2e_mock_response'
+const E2E_MOCK_INTENT_KEY = 'ape_e2e_mock_intent'
 const E2E_ENHANCE_REQUESTS_KEY = 'ape_e2e_enhance_requests'
 const E2E_MOCK_DELAY_MS_KEY = 'ape_e2e_mock_delay_ms'
 const E2E_MOCK_CLARIFICATION_KEY = 'ape_e2e_mock_clarification'
@@ -355,12 +356,18 @@ const tryE2EMockEnhance = async (payload: {
   clarificationContext?: ClarificationAnswer[]
   workflow?: EnhancementWorkflow
 }) => {
-  const state = await chrome.storage.local.get([E2E_MOCK_RESPONSE_KEY, E2E_ENHANCE_REQUESTS_KEY, E2E_MOCK_DELAY_MS_KEY])
+  const state = await chrome.storage.local.get([
+    E2E_MOCK_RESPONSE_KEY,
+    E2E_MOCK_INTENT_KEY,
+    E2E_ENHANCE_REQUESTS_KEY,
+    E2E_MOCK_DELAY_MS_KEY,
+  ])
   const mockResponse = state[E2E_MOCK_RESPONSE_KEY]
   if (typeof mockResponse !== 'string' || !mockResponse.trim()) {
     return null
   }
   const requests = Array.isArray(state[E2E_ENHANCE_REQUESTS_KEY]) ? state[E2E_ENHANCE_REQUESTS_KEY] : []
+  const mockIntent = state[E2E_MOCK_INTENT_KEY]
   const delayMs = Number(state[E2E_MOCK_DELAY_MS_KEY] ?? 0)
   if (Number.isFinite(delayMs) && delayMs > 0) {
     await new Promise((resolve) => setTimeout(resolve, Math.min(delayMs, 10_000)))
@@ -386,6 +393,17 @@ const tryE2EMockEnhance = async (payload: {
     summary: 'E2E mock response generated locally without calling any third-party AI API.',
     warnings: [] as string[],
     placeholders: [] as string[],
+    intentSummary:
+      mockIntent && typeof mockIntent === 'object' && typeof (mockIntent as { intentSummary?: unknown }).intentSummary === 'string'
+        ? (mockIntent as { intentSummary: string }).intentSummary
+        : '用户希望获得一份可直接执行的结构化结果。',
+    missingInformation:
+      mockIntent && typeof mockIntent === 'object' && Array.isArray((mockIntent as { missingInformation?: unknown }).missingInformation)
+        ? (mockIntent as { missingInformation: unknown[] }).missingInformation.filter((item): item is string => typeof item === 'string')
+        : [],
+    needsClarification: Boolean(
+      mockIntent && typeof mockIntent === 'object' && (mockIntent as { needsClarification?: unknown }).needsClarification === true,
+    ),
   }
 }
 
@@ -419,6 +437,16 @@ const fallbackClarificationQuestions: ClarificationQuestion[] = [
     required: false,
   },
 ]
+
+const normalizeEnhanceIntent = (result: EnhanceOutput): EnhanceOutput => {
+  const missingInformation = [...new Set((result.missingInformation ?? []).map((item) => item.trim()).filter(Boolean))].slice(0, 6)
+  return {
+    ...result,
+    intentSummary: result.intentSummary?.trim() || result.summary?.trim() || undefined,
+    missingInformation,
+    needsClarification: result.needsClarification === true || missingInformation.length > 0,
+  }
+}
 
 const normalizeClarificationQuestions = (result: EnhanceOutput): ClarificationQuestion[] => {
   const structured = result.clarificationQuestions
@@ -609,7 +637,7 @@ const enhanceText = async (payload: {
   })
 
   const mockResult = await tryE2EMockEnhance(payload)
-  const result =
+  const rawResult =
     mockResult ??
     (await (async () => {
       const optimizedConfig = providerConfig
@@ -710,6 +738,7 @@ const enhanceText = async (payload: {
         inFlightEnhancements.delete(cacheKey)
       }
     })())
+  const result = normalizeEnhanceIntent(rawResult)
 
   let historyId: string | undefined
   if (settings.historyEnabled) {

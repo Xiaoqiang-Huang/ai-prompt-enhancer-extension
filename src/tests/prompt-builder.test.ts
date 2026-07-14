@@ -12,6 +12,8 @@ describe('buildPrompt', () => {
 
     expect(result.systemPrompt).toContain('目标用户')
     expect(result.systemPrompt).toContain('JSON')
+    expect(result.systemPrompt).toContain('missingInformation')
+    expect(result.systemPrompt).toContain('needsClarification')
     expect(result.userPrompt).toContain('先后出现规则')
   })
 

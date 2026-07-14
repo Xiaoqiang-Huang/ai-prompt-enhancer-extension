@@ -97,6 +97,7 @@ export interface PromptSkillVersion {
   description: string
   variables: PromptSkillVariable[]
   triggerConditions: string[]
+  intentRequirements?: string[]
 }
 
 export interface PromptSkill {
@@ -111,6 +112,7 @@ export interface PromptSkill {
   promptTemplate: string
   variables: PromptSkillVariable[]
   triggerConditions: string[]
+  intentRequirements?: string[]
   enabled: boolean
   builtin: boolean
   rating: number
@@ -210,6 +212,13 @@ export interface PromptBuildResult {
   languageHint: string
 }
 
+export interface IntentInsight {
+  intentSummary?: string
+  missingInformation: string[]
+  needsClarification: boolean
+  clarificationQuestions?: ClarificationQuestion[]
+}
+
 export interface EnhanceOutput {
   enhancedPrompt: string
   title?: string
@@ -218,6 +227,9 @@ export interface EnhanceOutput {
   placeholders: string[]
   clarificationQuestions?: ClarificationQuestion[]
   readyToEnhance?: boolean
+  intentSummary?: string
+  missingInformation: string[]
+  needsClarification: boolean
   truncated?: boolean
   finishReason?: string
 }

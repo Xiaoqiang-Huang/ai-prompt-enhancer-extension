@@ -21,6 +21,8 @@ export const parseProviderJson = (raw: string): EnhanceOutput => {
       enhancedPrompt: fallbackText,
       warnings: ['模型返回非 JSON 格式，已按原文回退展示'],
       placeholders: [],
+      missingInformation: [],
+      needsClarification: false,
     }
   }
 }

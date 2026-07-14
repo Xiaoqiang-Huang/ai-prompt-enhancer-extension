@@ -245,6 +245,7 @@ export const SidePanelApp = () => {
       description: target.description,
       variables: target.variables,
       triggerConditions: target.triggerConditions,
+      intentRequirements: target.intentRequirements ?? selectedSkill.intentRequirements,
       updatedAt: new Date().toISOString(),
     })
     await refresh()
@@ -677,6 +678,20 @@ export const SidePanelApp = () => {
                       onChange={(event) =>
                         void saveEditedSkill({
                           triggerConditions: event.target.value
+                            .split('\n')
+                            .map((item) => item.trim())
+                            .filter(Boolean),
+                        })
+                      }
+                    />
+                  </Field>
+                  <Field label="关键意图字段（每行一条）">
+                    <Textarea
+                      value={(selectedSkill.intentRequirements ?? []).join('\n')}
+                      placeholder="例如：goal\ntechnicalStack\nexpectedOutput\nacceptanceCriteria"
+                      onChange={(event) =>
+                        void saveEditedSkill({
+                          intentRequirements: event.target.value
                             .split('\n')
                             .map((item) => item.trim())
                             .filter(Boolean),

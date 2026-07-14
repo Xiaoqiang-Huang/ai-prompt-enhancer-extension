@@ -28,7 +28,7 @@ export const buildClarificationPrompt = (input: BuildClarificationPromptInput): 
         .join('\n\n')
     : '暂无'
   const skillContext = input.skill
-    ? `当前将使用 Skill：${input.skill.name}\nSkill 目标：${input.skill.description}`
+    ? `当前将使用 Skill：${input.skill.name}\nSkill 目标：${input.skill.description}\n关键意图字段：${input.skill.intentRequirements?.join('、') || '目标、场景、约束、输入、输出和验收标准'}`
     : '当前未指定 Skill，请按通用高质量 Prompt 的信息需求判断。'
 
   return {

@@ -218,9 +218,10 @@ async function screenshot(session, filename) {
   await writeFile(path.join(qaDir, filename), Buffer.from(result.data, 'base64'))
 }
 
-async function setMock(serviceWorkerSession, response, delayMs = 0) {
+async function setMock(serviceWorkerSession, response, delayMs = 0, intent = {}) {
   await evalIn(serviceWorkerSession, `chrome.storage.local.set(${JSON.stringify({
     ape_e2e_mock_response: response,
+    ape_e2e_mock_intent: intent,
     ape_e2e_enhance_requests: [],
     ape_e2e_mock_delay_ms: delayMs,
   })})`)
@@ -329,7 +330,11 @@ try {
   await loaded
   await waitEval(fixture.session, 'document.querySelector("textarea")?.value.includes("登录接口")', 'fixture textarea')
 
-  await setMock(storageSession, structuredLoginPrompt, 1500)
+  await setMock(storageSession, structuredLoginPrompt, 1500, {
+    intentSummary: '用户希望实现一个可用于生产环境的登录接口。',
+    missingInformation: ['技术栈', '认证方式'],
+    needsClarification: true,
+  })
   await evalIn(fixture.session, `document.querySelector('textarea').focus()`)
   const autoInjected = await evalIn(fixture.session, 'Boolean(document.querySelector("[data-ape-testid=launcher]"))')
   if (!autoInjected) {
@@ -431,6 +436,10 @@ try {
   await waitEval(fixture.session, 'document.querySelector("[data-ape-testid=compare-original]")?.innerText.length > 10 && document.querySelector("[data-ape-testid=compare-optimized]")?.innerText.includes("结构化登录接口实现 Prompt")', 'compare view')
   await screenshot(fixture.session, 'compare-dialog.png')
   check('点击增强提示词后出现对比视图', true)
+  check(
+    '直接增强同时展示意图摘要和关键缺失信息',
+    await evalIn(fixture.session, 'document.querySelector("[data-ape-testid=intent-insight]")?.innerText.includes("技术栈") && document.querySelector("[data-ape-testid=enter-clarification]") !== null'),
+  )
   check('未接受前原输入框内容不变', await evalIn(fixture.session, 'document.querySelector("textarea").value') === '帮我写一个登录接口')
   await click(fixture.session, '[data-ape-testid=reject-optimized]')
   await sleep(300)
@@ -585,6 +594,7 @@ try {
     'Viewport-wide inputs use an above/below fallback instead of overlap',
     'Enhance progress indicator is visible while waiting',
     'Enhance prompt opens the before/after comparison view',
+    'Direct enhancement shows intent summary and critical missing information',
     'Original input is unchanged before accepting',
     'Reject keeps the original input unchanged',
     'Clarify-first mode displays targeted intent questions',
@@ -604,7 +614,7 @@ try {
   ]
   const readableDetail = (index, details) => {
     if (!details) return ''
-    if (index === 19) return 'first paragraph optimized, second original paragraph preserved'
+    if (index === 20) return 'first paragraph optimized, second original paragraph preserved'
     return [...details].every((char) => char.charCodeAt(0) <= 0x7f) ? details : ''
   }
   const report = [

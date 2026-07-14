@@ -1,11 +1,16 @@
 ﻿export const RESPONSE_SCHEMA_HINT = `Please return JSON with the following structure:
 {
   "enhancedPrompt": "string, AI-ready final prompt text",
+  "intentSummary": "string, concise summary of what the user is trying to accomplish",
+  "missingInformation": ["string, only critical information whose absence can materially change the result"],
+  "needsClarification": false,
+  "clarificationQuestions": [],
   "title": "string, optional short title",
   "summary": "string, optional enhancement summary",
   "warnings": ["string"],
   "placeholders": ["string", "..."]
-}`
+}
+For direct enhancement, set needsClarification=true only when a critical field is missing. Do not list optional nice-to-have details in missingInformation. If the request is sufficiently clear, use an empty missingInformation array, needsClarification=false, and an empty clarificationQuestions array.`
 
 export const CLARIFICATION_SCHEMA_HINT = `Please return JSON with the following structure:
 {
@@ -34,6 +39,9 @@ const parseJsonCandidate = (candidate: string) => {
     placeholders?: unknown
     clarificationQuestions?: unknown
     readyToEnhance?: unknown
+    intentSummary?: unknown
+    missingInformation?: unknown
+    needsClarification?: unknown
   }
 
   if (!parsed || typeof parsed !== 'object' || typeof parsed.enhancedPrompt !== 'string') {
@@ -71,6 +79,14 @@ const parseJsonCandidate = (candidate: string) => {
       : [],
     clarificationQuestions,
     readyToEnhance: typeof parsed.readyToEnhance === 'boolean' ? parsed.readyToEnhance : undefined,
+    intentSummary: typeof parsed.intentSummary === 'string' ? parsed.intentSummary.trim() : undefined,
+    missingInformation: Array.isArray(parsed.missingInformation)
+      ? parsed.missingInformation
+          .filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+          .map((item) => item.trim())
+          .slice(0, 6)
+      : [],
+    needsClarification: parsed.needsClarification === true,
   }
 }
 

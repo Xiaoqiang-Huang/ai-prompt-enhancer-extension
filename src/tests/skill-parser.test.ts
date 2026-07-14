@@ -29,4 +29,18 @@ describe('parseSkillTextMany', () => {
       ),
     ).toThrow('skills[0].id 不合法')
   })
+
+  it('normalizes optional intent requirements for direct-mode checks', () => {
+    const [skill] = parseSkillTextMany(`
+id: custom-code-skill
+name: Custom code skill
+promptTemplate: "实现：{{input}}"
+intentRequirements:
+  - goal
+  - technicalStack
+  - acceptanceCriteria
+`, 'paste')
+
+    expect(skill.intentRequirements).toEqual(['goal', 'technicalStack', 'acceptanceCriteria'])
+  })
 })

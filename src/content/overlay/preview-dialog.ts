@@ -7,6 +7,7 @@ import type {
   EditorSnapshot,
   EnhancementWorkflow,
   EnhanceMode,
+  IntentInsight,
 } from '@/shared/types'
 
 interface OpenPreviewOptions {
@@ -25,6 +26,12 @@ interface ClarifyResponse {
   questions: ClarificationQuestion[]
   readyToEnhance: boolean
   warnings: string[]
+}
+
+interface EnhanceResponseData extends IntentInsight {
+  enhancedPrompt: string
+  warnings: string[]
+  historyId?: string
 }
 
 const tryExtractEnhancedPrompt = (raw: string) => {
@@ -120,6 +127,15 @@ const ensurePreviewStyles = () => {
     .ape-progress-track { height:7px; overflow:hidden; border-radius:999px; background:#dcece4; }
     .ape-progress-bar { height:100%; width:8%; border-radius:999px; background:linear-gradient(90deg,#1f9d68,#e6a93d,#1f9d68); background-size:220% 100%; transition:width .35s ease; animation:ape-shimmer 1.8s linear infinite; }
     .ape-progress-text { margin-top:8px; color:#315c4b; font-size:12px; }
+    .ape-intent-insight { display:none; margin:14px 24px 0; padding:14px 16px; border:1px solid #cfe0d7; border-radius:16px; background:linear-gradient(135deg,#f5fbf8,#eef8f3); }
+    .ape-intent-insight[data-needs-clarification="true"] { border-color:#e5c98e; background:linear-gradient(135deg,#fffaf0,#f8f7ee); }
+    .ape-intent-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .ape-intent-title { color:#123f35; font-size:13px; font-weight:800; }
+    .ape-intent-badge { color:#567067; font-size:11px; }
+    .ape-intent-summary { margin-top:7px; color:#2c463a; font-size:12px; line-height:1.6; white-space:pre-wrap; }
+    .ape-intent-missing { margin:10px 0 0; padding-left:19px; color:#765016; font-size:12px; line-height:1.6; }
+    .ape-intent-actions { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:11px; }
+    .ape-intent-hint { color:#7b6c50; font-size:11px; }
     .ape-stage { padding:20px 24px 24px; }
     .ape-clarify-layout { display:grid; grid-template-columns:minmax(220px,.72fr) minmax(0,1.28fr); gap:18px; align-items:start; }
     .ape-conversation { border:1px solid #d8e4de; border-radius:18px; background:#f7faf8; padding:15px; max-height:470px; overflow:auto; }
@@ -184,6 +200,7 @@ export class PreviewDialog {
   private progressWrap: HTMLDivElement
   private progressBar: HTMLDivElement
   private progressText: HTMLDivElement
+  private intentInsight: HTMLDivElement
   private directFlowButton: HTMLButtonElement
   private clarifyFlowButton: HTMLButtonElement
   private clarifyStage: HTMLDivElement
@@ -294,6 +311,10 @@ export class PreviewDialog {
     progressTrack.appendChild(this.progressBar)
     this.progressWrap.append(progressTrack, this.progressText)
 
+    this.intentInsight = document.createElement('div')
+    this.intentInsight.className = 'ape-intent-insight'
+    this.intentInsight.dataset.apeTestid = 'intent-insight'
+
     this.clarifyStage = document.createElement('div')
     this.clarifyStage.className = 'ape-stage'
     this.clarifyStage.dataset.apeTestid = 'clarify-stage'
@@ -366,7 +387,7 @@ export class PreviewDialog {
     )
     this.resultStage.append(compareGrid, actions, continueRow, partialTitle, this.partialBox)
 
-    this.panel.append(header, toolbar, this.progressWrap, this.clarifyStage, this.resultStage)
+    this.panel.append(header, toolbar, this.progressWrap, this.intentInsight, this.clarifyStage, this.resultStage)
     this.host.appendChild(this.panel)
     this.host.addEventListener('click', (event) => {
       if (event.target === this.host) this.close()
@@ -413,6 +434,7 @@ export class PreviewDialog {
     this.stopProgress(false)
     this.currentWorkflow = workflow
     this.updateWorkflowUi()
+    this.clearIntentInsight()
     this.selectedParagraphs.clear()
     this.currentOptimizedText = ''
     if (!request) return
@@ -456,6 +478,70 @@ export class PreviewDialog {
       this.progressWrap.style.display = 'none'
     }
     this.isStreaming = false
+  }
+
+  private clearIntentInsight(): void {
+    this.intentInsight.replaceChildren()
+    this.intentInsight.style.display = 'none'
+    delete this.intentInsight.dataset.needsClarification
+  }
+
+  private renderIntentInsight(insight: IntentInsight): void {
+    this.clearIntentInsight()
+    const summary = insight.intentSummary?.trim() ?? ''
+    const missing = [...new Set(insight.missingInformation.map((item) => item.trim()).filter(Boolean))]
+    if (!summary && missing.length === 0) return
+
+    this.intentInsight.dataset.needsClarification = String(insight.needsClarification)
+    const head = document.createElement('div')
+    head.className = 'ape-intent-head'
+    const title = document.createElement('div')
+    title.className = 'ape-intent-title'
+    title.textContent = 'AI 对当前需求的理解'
+    const badge = document.createElement('div')
+    badge.className = 'ape-intent-badge'
+    badge.textContent = insight.needsClarification ? '发现可能影响结果的关键信息缺口' : '信息完整度良好'
+    head.append(title, badge)
+    this.intentInsight.appendChild(head)
+
+    if (summary) {
+      const summaryNode = document.createElement('div')
+      summaryNode.className = 'ape-intent-summary'
+      summaryNode.textContent = summary
+      this.intentInsight.appendChild(summaryNode)
+    }
+
+    if (missing.length > 0) {
+      const label = document.createElement('div')
+      label.className = 'ape-intent-hint'
+      label.style.marginTop = '9px'
+      label.textContent = '建议补充：'
+      const list = document.createElement('ul')
+      list.className = 'ape-intent-missing'
+      missing.forEach((item) => {
+        const entry = document.createElement('li')
+        entry.textContent = item
+        list.appendChild(entry)
+      })
+      this.intentInsight.append(label, list)
+    }
+
+    if (insight.needsClarification) {
+      const actions = document.createElement('div')
+      actions.className = 'ape-intent-actions'
+      const clarifyButton = document.createElement('button')
+      clarifyButton.type = 'button'
+      clarifyButton.className = 'ape-btn ape-btn-accent'
+      clarifyButton.dataset.apeTestid = 'enter-clarification'
+      clarifyButton.textContent = '进入追问模式'
+      clarifyButton.addEventListener('click', () => void this.activateWorkflow('clarify', true))
+      const hint = document.createElement('span')
+      hint.className = 'ape-intent-hint'
+      hint.textContent = '当前结果仍可直接接受，原始输入不会自动替换。'
+      actions.append(clarifyButton, hint)
+      this.intentInsight.appendChild(actions)
+    }
+    this.intentInsight.style.display = 'block'
   }
 
   private renderConversation() {
@@ -613,6 +699,7 @@ export class PreviewDialog {
   }
 
   private renderLoading(): void {
+    this.clearIntentInsight()
     this.originalBox.innerHTML = `<div class="ape-box-label"><span class="ape-box-dot"></span>原始提示词</div><div>${renderDiffHtml(
       this.currentSourceText,
       this.currentSourceText,
@@ -623,11 +710,13 @@ export class PreviewDialog {
   }
 
   private renderError(message: string): void {
+    this.clearIntentInsight()
     this.optimizedBox.innerHTML = `<div class="ape-box-label"><span class="ape-box-dot ape-box-dot-green"></span>优化后提示词</div><div class="ape-empty-state" style="border-color:#e7c8bd;background:#fff8f5;color:#8c442f">${escapeHtml(message)}</div>`
     this.partialBox.innerHTML = '<div style="color:#6d8077;font-size:12px;padding:4px">当前没有可接受的结果，请检查 Provider、模型和 API Key。</div>'
   }
 
   private renderStreamPreview(partial: string): void {
+    this.clearIntentInsight()
     const previewText = tryExtractEnhancedPrompt(partial) || partial
     this.originalBox.innerHTML = `<div class="ape-box-label"><span class="ape-box-dot"></span>原始提示词</div><div>${renderDiffHtml(
       this.currentSourceText,
@@ -706,7 +795,7 @@ export class PreviewDialog {
     this.renderLoading()
     this.startProgress('正在组织目标、上下文、约束和输出结构…')
     let response:
-      | { ok: true; data: { enhancedPrompt: string; warnings: string[]; historyId?: string } }
+      | { ok: true; data: EnhanceResponseData }
       | { ok: false; error: { message: string } }
     try {
       response = (await chrome.runtime.sendMessage({
@@ -744,6 +833,7 @@ export class PreviewDialog {
     this.currentOptimizedText = response.data.enhancedPrompt
     this.selectedParagraphs.clear()
     this.renderFinal()
+    this.renderIntentInsight(response.data)
     this.stopProgress(true, '优化完成')
     this.status.textContent = response.data.warnings.length
       ? `优化完成 · ${response.data.warnings.join('；')}`

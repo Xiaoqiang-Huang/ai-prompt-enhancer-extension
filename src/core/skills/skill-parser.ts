@@ -52,6 +52,7 @@ const normalizeVersions = (value: unknown, fallbackTemplate: string, fallbackDes
       description: String(record.description ?? fallbackDescription),
       variables: normalizeVariables(record.variables),
       triggerConditions: Array.isArray(record.triggerConditions) ? record.triggerConditions.map(String) : [],
+      intentRequirements: Array.isArray(record.intentRequirements) ? record.intentRequirements.map(String).filter(Boolean) : undefined,
     }
   })
 }
@@ -82,6 +83,7 @@ const normalizeSkill = (raw: Record<string, unknown>, sourceType: PromptSkill['s
     promptTemplate,
     variables: normalizeVariables(raw.variables),
     triggerConditions: Array.isArray(raw.triggerConditions) ? raw.triggerConditions.map(String) : [],
+    intentRequirements: Array.isArray(raw.intentRequirements) ? raw.intentRequirements.map(String).filter(Boolean) : undefined,
     enabled: Boolean(raw.enabled ?? true),
     builtin: false,
     rating: Number(raw.rating ?? 0),

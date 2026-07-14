@@ -50,4 +50,20 @@ describe('clarification workflow', () => {
     ])
     expect(output.readyToEnhance).toBe(false)
   })
+
+  it('parses direct-mode intent insight and critical missing fields', () => {
+    const output = parseEnhanceOutput(JSON.stringify({
+      enhancedPrompt: '请实现一个登录接口。',
+      intentSummary: '用户希望实现一个可用于生产环境的登录接口。',
+      missingInformation: ['技术栈', '认证方式'],
+      needsClarification: true,
+      clarificationQuestions: [],
+      warnings: [],
+      placeholders: [],
+    }))
+
+    expect(output.intentSummary).toContain('登录接口')
+    expect(output.missingInformation).toEqual(['技术栈', '认证方式'])
+    expect(output.needsClarification).toBe(true)
+  })
 })
