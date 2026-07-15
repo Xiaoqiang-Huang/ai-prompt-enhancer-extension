@@ -1,6 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { PopupApp } from '@/ui/popup/PopupApp'
-import { waitFor } from '@testing-library/react'
 
 const mockRefs = vi.hoisted(() => ({
   runtimeSendMessage: vi.fn(),
@@ -188,9 +187,15 @@ describe('PopupApp', () => {
     render(<PopupApp />)
 
     const skillSelect = (await screen.findByLabelText('默认 Skill')) as HTMLSelectElement
+    await waitFor(() => {
+      expect(Array.from(skillSelect.options).some((option) => option.value === 'code-review-skill')).toBe(true)
+    })
+
     fireEvent.change(skillSelect, { target: { value: 'code-review-skill' } })
 
-    expect(mockRefs.settingsSet).toHaveBeenCalledWith({ defaultSkillId: 'code-review-skill' })
+    await waitFor(() => {
+      expect(mockRefs.settingsSet).toHaveBeenCalledWith({ defaultSkillId: 'code-review-skill' })
+    })
   })
 
   it('saves api key without local passphrase', async () => {
