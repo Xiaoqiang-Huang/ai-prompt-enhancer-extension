@@ -4,7 +4,7 @@ import {
   type LauncherClusterLayout,
   type LauncherCompanionSize,
 } from '@/content/overlay/launcher-layout'
-import type { EditableAdapter } from '@/shared/types'
+import type { EditableAdapter, LauncherPosition } from '@/shared/types'
 
 type LauncherState = 'idle' | 'working' | 'done' | 'error'
 
@@ -13,7 +13,7 @@ export class FloatingButton {
   private size = 24
   private opacity = 0.92
   private color = '#22c55e'
-  private position: 'left' | 'right' | 'floating' = 'right'
+  private position: LauncherPosition = 'above'
   private companionOffset = 0
 
   constructor(private readonly onClick: () => void) {
@@ -70,7 +70,7 @@ export class FloatingButton {
     size: number
     opacity: number
     color: string
-    position: 'left' | 'right' | 'floating'
+    position: LauncherPosition
     companionOffset?: number
   }) {
     this.size = input.size

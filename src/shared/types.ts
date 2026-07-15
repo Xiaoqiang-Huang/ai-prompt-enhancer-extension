@@ -26,6 +26,8 @@ export type OutputFormat = 'markdown' | 'plain' | 'json' | 'checklist' | 'codex'
 
 export type EnhancementWorkflow = 'direct' | 'clarify'
 
+export type LauncherPosition = 'above' | 'left' | 'right' | 'floating'
+
 export interface Settings {
   schemaVersion: number
   language: LanguageCode
@@ -44,7 +46,7 @@ export interface Settings {
   launcher: {
     enabled: boolean
     secondaryActionsEnabled: boolean
-    position: 'left' | 'right' | 'floating'
+    position: LauncherPosition
     size: number
     opacity: number
     color: string

@@ -434,6 +434,7 @@ export const OptionsApp = () => {
                     void patchSettings({ launcher: { ...settings.launcher, position: event.target.value as Settings['launcher']['position'] } })
                   }
                 >
+                  <option value="above">上方（推荐）</option>
                   <option value="left">左侧</option>
                   <option value="right">右侧</option>
                   <option value="floating">浮动</option>

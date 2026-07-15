@@ -131,6 +131,28 @@ describe('launcher layout', () => {
     expect(overlaps(layout.dock!, 88, 24, anchor)).toBe(false)
   })
 
+  it('keeps the launcher cluster above the input when above is selected', () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1400 })
+    const anchor = domRect(300, 900, 400, 500)
+    const layout = computeLauncherClusterLayout(anchor, 24, 'above', { width: 88, height: 24 })
+
+    expect(layout.side).toBe('above')
+    expect(layout.launcher.top + 24).toBeLessThanOrEqual(anchor.top - 8)
+    expect(layout.dock).toBeDefined()
+    expect(overlaps(layout.launcher, 24, 24, anchor)).toBe(false)
+    expect(overlaps(layout.dock!, 88, 24, anchor)).toBe(false)
+  })
+
+  it('uses below as the safe fallback when there is no room above', () => {
+    const anchor = domRect(300, 900, 12, 72)
+    const layout = computeLauncherClusterLayout(anchor, 24, 'above', { width: 88, height: 24 })
+
+    expect(layout.side).toBe('below')
+    expect(layout.launcher.top).toBeGreaterThanOrEqual(anchor.bottom + 8)
+    expect(overlaps(layout.launcher, 24, 24, anchor)).toBe(false)
+    expect(overlaps(layout.dock!, 88, 24, anchor)).toBe(false)
+  })
+
   it('moves the entire cluster to the left when the right side is too narrow', () => {
     const anchor = domRect(300, 950, 400, 500)
     const layout = computeLauncherClusterLayout(anchor, 24, 'right', { width: 88, height: 24 })

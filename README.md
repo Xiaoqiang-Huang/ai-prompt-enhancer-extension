@@ -2,7 +2,7 @@
 
 一个中文优先、隐私可控的 Chrome MV3 提示词增强扩展。它把提示词优化、Skill 管理、多 Provider 配置、意图追问、对比确认、个人提示词库和对话导出放到用户正在使用的 AI 网页旁边。
 
-> 当前版本：`0.1.3` · 开源协议：MIT · 不需要后端服务
+> 当前版本：`0.1.4` · 开源协议：MIT · 不需要后端服务
 
 项目地址：[github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension](https://github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension)
 

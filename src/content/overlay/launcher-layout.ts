@@ -1,3 +1,5 @@
+import type { LauncherPosition } from '@/shared/types'
+
 const SITE_CONTAINER_SELECTORS: Array<{
   match: (hostname: string) => boolean
   selectors: string[]
@@ -29,6 +31,24 @@ const SITE_CONTAINER_SELECTORS: Array<{
       '[class*="chat-input"]',
       'form',
       '[class*="input"]',
+    ],
+  },
+  {
+    match: (hostname) => hostname === 'gemini.google.com',
+    selectors: [
+      '[class*="input-area"]',
+      '[class*="composer"]',
+      'rich-textarea',
+      'form',
+    ],
+  },
+  {
+    match: (hostname) => hostname === 'copilot.microsoft.com',
+    selectors: [
+      '[data-testid*="composer"]',
+      '[class*="composer"]',
+      '[class*="input"]',
+      'form',
     ],
   },
 ]
@@ -226,13 +246,13 @@ const buildVerticalLayout = (
 
 /**
  * Places the launcher and its three secondary actions as one cluster. The
- * whole cluster must fit outside the input/composer; only when both horizontal
- * sides are unavailable do we move the cluster above or below the composer.
+ * preferred "above" mode keeps the controls out of the composer even when a
+ * site's editable rect does not cover all of its visible input container.
  */
 export const computeLauncherClusterLayout = (
   anchorRect: DOMRect,
   size: number,
-  position: 'left' | 'right' | 'floating',
+  position: LauncherPosition,
   companion?: LauncherCompanionSize,
 ): LauncherClusterLayout => {
   const groupWidth = size + (companion ? CONTROL_GAP + companion.width : 0)
@@ -241,6 +261,16 @@ export const computeLauncherClusterLayout = (
   const leftSpace = anchorRect.left - VIEWPORT_MARGIN - ANCHOR_GAP
   const aboveSpace = anchorRect.top - VIEWPORT_MARGIN - ANCHOR_GAP
   const belowSpace = window.innerHeight - VIEWPORT_MARGIN - anchorRect.bottom - ANCHOR_GAP
+
+  if (position === 'above') {
+    for (const side of ['above', 'below'] as const) {
+      const available = side === 'above' ? aboveSpace : belowSpace
+      if (available >= groupHeight) {
+        return buildVerticalLayout(anchorRect, size, companion, side)
+      }
+    }
+  }
+
   const horizontalPreference: Array<'right' | 'left'> =
     position === 'left' ? ['left', 'right'] : ['right', 'left']
 
@@ -277,7 +307,7 @@ export const computeLauncherClusterLayout = (
 export const computeLauncherPosition = (
   anchorRect: DOMRect,
   size: number,
-  position: 'left' | 'right' | 'floating',
+  position: LauncherPosition,
   companionOffset = 0,
 ) => {
   const companion = companionOffset > 0

@@ -384,7 +384,7 @@ try {
       placement: document.querySelector('[data-ape-testid=launcher]').dataset.apePlacement,
     }
   })()`)
-  check('Launcher cluster stays outside the active input', !normalGeometry.launcherOverlap && !normalGeometry.dockOverlap, JSON.stringify(normalGeometry))
+  check('Launcher cluster stays above and outside the active input', !normalGeometry.launcherOverlap && !normalGeometry.dockOverlap && normalGeometry.placement === 'above', JSON.stringify(normalGeometry))
 
   await evalIn(fixture.session, `(() => {
     const input = document.querySelector('textarea')
@@ -515,6 +515,11 @@ try {
     'continue input filled',
   )
   await click(fixture.session, '[data-ape-testid=continue-optimize]')
+  await waitEval(
+    storageSession,
+    `chrome.storage.local.get('ape_e2e_enhance_requests').then((state) => state.ape_e2e_enhance_requests?.at(-1)?.followUpInstruction === 'MAKE_IT_SHORTER_E2E')`,
+    'continue request persisted',
+  )
   await waitEval(fixture.session, 'document.querySelector("[data-ape-testid=compare-optimized]")?.innerText.includes("??????")', 'continue optimized')
   const requests = (await getStorage(storageSession, ['ape_e2e_enhance_requests'])).ape_e2e_enhance_requests
   const lastRequest = requests.at(-1)
@@ -588,9 +593,9 @@ try {
     'Popup opens',
     'Options page opens',
     'Side panel opens',
-    'Green launcher appears beside the fixture input',
+    'Green launcher appears above the fixture input',
     'Secondary action bubbles are visible beside the launcher',
-    'Launcher and secondary actions do not overlap the active input',
+    'Launcher and secondary actions stay above and do not overlap the active input',
     'Viewport-wide inputs use an above/below fallback instead of overlap',
     'Enhance progress indicator is visible while waiting',
     'Enhance prompt opens the before/after comparison view',

@@ -14,7 +14,7 @@ export const STORAGE_KEYS = {
   installId: 'ape_install_id',
 } as const
 
-export const SCHEMA_VERSION = 1
+export const SCHEMA_VERSION = 2
 
 export const DEFAULT_SETTINGS: Settings = {
   schemaVersion: SCHEMA_VERSION,
@@ -34,7 +34,7 @@ export const DEFAULT_SETTINGS: Settings = {
   launcher: {
     enabled: true,
     secondaryActionsEnabled: true,
-    position: 'right',
+    position: 'above',
     size: 24,
     opacity: 0.92,
     color: '#22c55e',
