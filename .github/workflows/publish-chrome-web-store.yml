@@ -1,0 +1,85 @@
+name: Publish Chrome Web Store
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrome-web-store-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: chrome-web-store
+    steps:
+      - name: Checkout released source
+        uses: actions/checkout@v4
+
+      - name: Check publishing configuration
+        id: cws
+        shell: bash
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+        run: |
+          if [[ -n "$CWS_CLIENT_ID" && -n "$CWS_CLIENT_SECRET" && -n "$CWS_REFRESH_TOKEN" && -n "$CWS_PUBLISHER_ID" && -n "$CWS_EXTENSION_ID" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Chrome Web Store publishing is not configured; release remains available but store publishing is skipped."
+          fi
+
+      - name: Setup Node.js
+        if: steps.cws.outputs.enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.cws.outputs.enabled == 'true'
+        run: npm ci
+
+      - name: Verify source
+        if: steps.cws.outputs.enabled == 'true'
+        run: |
+          npm run typecheck
+          npm run test:run
+          npm run lint
+
+      - name: Build extension
+        if: steps.cws.outputs.enabled == 'true'
+        run: npm run build
+
+      - name: Verify release version
+        if: steps.cws.outputs.enabled == 'true' && github.event_name == 'release'
+        shell: bash
+        run: |
+          VERSION="$(node -p "require('./dist/manifest.json').version")"
+          test "v$VERSION" = "${{ github.event.release.tag_name }}"
+
+      - name: Package Chrome Web Store ZIP
+        if: steps.cws.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          cd dist
+          zip -qr ../chrome-web-store.zip .
+
+      - name: Upload and submit update
+        if: steps.cws.outputs.enabled == 'true'
+        env:
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CWS_ZIP_PATH: chrome-web-store.zip
+        run: node scripts/publish-cws.mjs

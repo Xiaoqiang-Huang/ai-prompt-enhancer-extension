@@ -2,7 +2,7 @@
   "name": "ai-prompt-enhancer-extension",
   "description": "A privacy-first Chrome extension for enhancing prompts with Skills and multiple AI providers.",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "keywords": ["chrome-extension", "prompt-engineering", "ai", "productivity", "typescript"],
   "type": "module",
@@ -14,7 +14,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "preview": "vite preview",
-    "test:e2e": "npm run build && node scripts/e2e.mjs"
+    "test:e2e": "npm run build && node scripts/e2e.mjs",
+    "publish:cws": "node scripts/publish-cws.mjs",
+    "publish:cws:dry-run": "node scripts/publish-cws.mjs --dry-run"
   },
   "dependencies": {
     "react": "^19.2.7",

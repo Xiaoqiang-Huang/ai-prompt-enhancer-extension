@@ -78,3 +78,11 @@ npm run test:e2e
 - [ ] 人工确认默认支持站点列表和商店权限说明一致。
 - [ ] 人工确认所有第三方 AI Provider 的品牌名称、描述和使用方式准确。
 - [ ] 使用测试 API Key 在真实 Provider 上做一次人工冒烟，但不要把 Key 写入截图或提交包。
+
+## Automatic update delivery
+
+- [ ] The Chrome Web Store item has completed its initial manual publication.
+- [ ] The `chrome-web-store` environment contains all five `CWS_*` encrypted secrets.
+- [ ] The release tag exactly matches `v` plus the version in `dist/manifest.json`.
+- [ ] The publish workflow uploads the ZIP and submits the item for review.
+- [ ] The built extension does not contain the project repository address or a release download address.
