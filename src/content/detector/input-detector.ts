@@ -2,7 +2,7 @@ import { CodeMirrorAdapter } from '@/content/adapters/codemirror-adapter'
 import { ContenteditableAdapter } from '@/content/adapters/contenteditable-adapter'
 import { MonacoAdapter } from '@/content/adapters/monaco-adapter'
 import { NativeInputAdapter } from '@/content/adapters/native-input-adapter'
-import { isSupportedAiChatHost, normalizeHostname } from '@/shared/supported-sites'
+import { isSupportedAiChatHost, isSupportedAiChatPage, normalizeHostname } from '@/shared/supported-sites'
 import type { EditableAdapter } from '@/shared/types'
 
 /**
@@ -10,8 +10,8 @@ import type { EditableAdapter } from '@/shared/types'
  * and other explicitly requested features. The launcher must only attach to
  * supported AI chat composers, never to arbitrary web inputs.
  */
-export const isAiChatHost = (hostname = window.location.hostname): boolean => {
-  return isSupportedAiChatHost(hostname)
+export const isAiChatHost = (hostname = window.location.hostname, pathname = window.location.pathname): boolean => {
+  return isSupportedAiChatPage(hostname, pathname)
 }
 
 const COMMON_AI_CHAT_SELECTORS = [

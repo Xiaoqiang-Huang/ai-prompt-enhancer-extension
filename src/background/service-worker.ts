@@ -17,7 +17,7 @@ import { templateStore } from '@/core/storage/template-store'
 import { appError } from '@/shared/errors'
 import { STORAGE_KEYS } from '@/shared/constants'
 import { logger } from '@/shared/logger'
-import { isSupportedAiChatHost } from '@/shared/supported-sites'
+import { isSupportedAiChatPage } from '@/shared/supported-sites'
 import type {
   ClarificationAnswer,
   ClarificationQuestion,
@@ -93,8 +93,8 @@ const isInjectableUrl = (url?: string): boolean =>
 const isSupportedPageUrl = (url?: string): boolean => {
   if (!isInjectableUrl(url)) return false
   try {
-    const hostname = new URL(url as string).hostname
-    return isSupportedAiChatHost(hostname) || SUPPORTED_UTILITY_HOSTS.has(hostname)
+    const parsedUrl = new URL(url as string)
+    return isSupportedAiChatPage(parsedUrl.hostname, parsedUrl.pathname) || SUPPORTED_UTILITY_HOSTS.has(parsedUrl.hostname)
   } catch {
     return false
   }

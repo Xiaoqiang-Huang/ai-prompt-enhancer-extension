@@ -2,7 +2,7 @@ export interface SupportedAiChatSite {
   id: string
   label: string
   hosts: string[]
-  matches?: string[]
+  pathPrefixes?: string[]
 }
 
 export const SUPPORTED_AI_CHAT_SITES: SupportedAiChatSite[] = [
@@ -32,7 +32,7 @@ export const SUPPORTED_AI_CHAT_SITES: SupportedAiChatSite[] = [
   { id: 'mistral', label: 'Mistral Le Chat', hosts: ['chat.mistral.ai'] },
   { id: 'meta-ai', label: 'Meta AI', hosts: ['meta.ai', 'www.meta.ai'] },
   { id: 'you', label: 'You.com', hosts: ['you.com'] },
-  { id: 'huggingchat', label: 'HuggingChat', hosts: ['huggingface.co'], matches: ['https://huggingface.co/chat/*'] },
+  { id: 'huggingchat', label: 'HuggingChat', hosts: ['huggingface.co'], pathPrefixes: ['/chat'] },
   { id: 'genspark', label: 'Genspark', hosts: ['genspark.ai', 'www.genspark.ai'] },
   { id: 'manus', label: 'Manus', hosts: ['manus.im'] },
   { id: 'coze', label: 'Coze', hosts: ['www.coze.cn', 'www.coze.com'] },
@@ -46,12 +46,21 @@ export const SUPPORTED_AI_CHAT_SITES: SupportedAiChatSite[] = [
 
 export const SUPPORTED_AI_CHAT_HOSTS = [...new Set(SUPPORTED_AI_CHAT_SITES.flatMap((site) => site.hosts))]
 
-export const SUPPORTED_AI_CHAT_MATCHES = [...new Set(SUPPORTED_AI_CHAT_SITES.flatMap((site) =>
-  site.matches ?? site.hosts.map((host) => `https://${host}/*`),
-))]
+export const SUPPORTED_AI_CHAT_MATCHES = [...new Set(SUPPORTED_AI_CHAT_HOSTS.map((host) => `https://${host}/*`))]
+
+// Chrome requires web_accessible_resources match patterns to use an origin-wide /* path.
+// Keep path-restricted content-script matches separate from these resource origins.
+export const SUPPORTED_AI_CHAT_ORIGIN_MATCHES = SUPPORTED_AI_CHAT_HOSTS.map((host) => `https://${host}/*`)
 
 const supportedHostSet = new Set(SUPPORTED_AI_CHAT_HOSTS)
 
 export const normalizeHostname = (hostname: string): string => hostname.trim().toLowerCase().split(':')[0]
 
 export const isSupportedAiChatHost = (hostname: string): boolean => supportedHostSet.has(normalizeHostname(hostname))
+
+export const isSupportedAiChatPage = (hostname: string, pathname = '/'): boolean => {
+  const normalizedHostname = normalizeHostname(hostname)
+  const site = SUPPORTED_AI_CHAT_SITES.find((candidate) => candidate.hosts.includes(normalizedHostname))
+  if (!site) return false
+  return !site.pathPrefixes || site.pathPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(prefix + '/'))
+}

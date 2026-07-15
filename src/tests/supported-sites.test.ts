@@ -1,7 +1,9 @@
 import {
   SUPPORTED_AI_CHAT_HOSTS,
   SUPPORTED_AI_CHAT_MATCHES,
+  SUPPORTED_AI_CHAT_ORIGIN_MATCHES,
   isSupportedAiChatHost,
+  isSupportedAiChatPage,
 } from '@/shared/supported-sites'
 
 describe('supported AI chat sites', () => {
@@ -20,6 +22,12 @@ describe('supported AI chat sites', () => {
     }
   })
 
+  it('restricts path-specific AI products to their chat page', () => {
+    expect(isSupportedAiChatPage('huggingface.co', '/chat')).toBe(true)
+    expect(isSupportedAiChatPage('huggingface.co', '/chat/')).toBe(true)
+    expect(isSupportedAiChatPage('huggingface.co', '/models')).toBe(false)
+  })
+
   it('does not classify utility sites as AI chat sites', () => {
     expect(isSupportedAiChatHost('github.com')).toBe(false)
     expect(isSupportedAiChatHost('mail.google.com')).toBe(false)
@@ -30,5 +38,7 @@ describe('supported AI chat sites', () => {
     expect(SUPPORTED_AI_CHAT_MATCHES).not.toContain('<all_urls>')
     expect(new Set(SUPPORTED_AI_CHAT_MATCHES).size).toBe(SUPPORTED_AI_CHAT_MATCHES.length)
     expect(new Set(SUPPORTED_AI_CHAT_HOSTS).size).toBe(SUPPORTED_AI_CHAT_HOSTS.length)
+    expect(SUPPORTED_AI_CHAT_ORIGIN_MATCHES).toContain('https://huggingface.co/*')
+    expect(SUPPORTED_AI_CHAT_ORIGIN_MATCHES.every((pattern) => /^https:\/\/[^/]+\/\*$/.test(pattern))).toBe(true)
   })
 })

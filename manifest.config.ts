@@ -1,5 +1,5 @@
 import type { ManifestV3Export } from '@crxjs/vite-plugin'
-import { SUPPORTED_AI_CHAT_MATCHES } from './src/shared/supported-sites.js'
+import { SUPPORTED_AI_CHAT_MATCHES, SUPPORTED_AI_CHAT_ORIGIN_MATCHES } from './src/shared/supported-sites.js'
 
 const utilityHosts = [
   'https://github.com/*',
@@ -10,6 +10,7 @@ const utilityHosts = [
 ]
 
 const supportedHosts = [...SUPPORTED_AI_CHAT_MATCHES, ...utilityHosts]
+const webAccessibleHosts = [...SUPPORTED_AI_CHAT_ORIGIN_MATCHES, ...utilityHosts]
 
 const providerApiHosts = [
   'https://api.openai.com/*',
@@ -30,7 +31,7 @@ const manifest: ManifestV3Export = {
   manifest_version: 3,
   name: '__MSG_appName__',
   description: '__MSG_appDescription__',
-  version: '0.1.6',
+  version: '0.1.7',
   default_locale: 'zh_CN',
   icons: {
     16: 'icons/icon-16.png',
@@ -79,7 +80,7 @@ const manifest: ManifestV3Export = {
   web_accessible_resources: [
     {
       resources: ['icons/*'],
-      matches: supportedHosts,
+      matches: webAccessibleHosts,
     },
   ],
 }
