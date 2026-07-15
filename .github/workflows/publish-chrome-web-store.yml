@@ -18,7 +18,7 @@ jobs:
     environment: chrome-web-store
     steps:
       - name: Checkout released source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Check publishing configuration
         id: cws
@@ -39,9 +39,9 @@ jobs:
 
       - name: Setup Node.js
         if: steps.cws.outputs.enabled == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
