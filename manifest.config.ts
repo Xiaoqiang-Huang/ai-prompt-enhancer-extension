@@ -1,18 +1,15 @@
 import type { ManifestV3Export } from '@crxjs/vite-plugin'
+import { SUPPORTED_AI_CHAT_MATCHES } from './src/shared/supported-sites.js'
 
-const supportedHosts = [
-  'https://chatgpt.com/*',
-  'https://chat.openai.com/*',
-  'https://claude.ai/*',
-  'https://gemini.google.com/*',
-  'https://chat.deepseek.com/*',
-  'https://copilot.microsoft.com/*',
+const utilityHosts = [
   'https://github.com/*',
   'https://mail.google.com/*',
   'https://docs.google.com/*',
   'https://www.notion.so/*',
   'https://notion.so/*',
 ]
+
+const supportedHosts = [...SUPPORTED_AI_CHAT_MATCHES, ...utilityHosts]
 
 const providerApiHosts = [
   'https://api.openai.com/*',
@@ -33,7 +30,7 @@ const manifest: ManifestV3Export = {
   manifest_version: 3,
   name: '__MSG_appName__',
   description: '__MSG_appDescription__',
-  version: '0.1.5',
+  version: '0.1.6',
   default_locale: 'zh_CN',
   icons: {
     16: 'icons/icon-16.png',

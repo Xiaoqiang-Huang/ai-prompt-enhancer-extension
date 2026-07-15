@@ -2,7 +2,7 @@
 
 一个中文优先、隐私可控的 Chrome MV3 提示词增强扩展。它把提示词优化、Skill 管理、多 Provider 配置、意图追问、对比确认、个人提示词库和对话导出放到用户正在使用的 AI 网页旁边。
 
-> 当前版本：`0.1.5` · 开源协议：MIT · 不需要后端服务
+> 当前版本：`0.1.6` · 开源协议：MIT · 不需要后端服务
 
 项目地址：[github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension](https://github.com/Xiaoqiang-Huang/ai-prompt-enhancer-extension)
 
@@ -12,7 +12,7 @@
 
 ## 功能概览
 
-- **绿色小球入口**：在 ChatGPT、Claude、Gemini、DeepSeek、Copilot 等支持站点的输入框旁提供轻量入口，自动避让输入框。
+- **绿色小球入口**：在豆包、Kimi、通义千问、腾讯元宝、ChatGPT、Claude、Gemini、DeepSeek、Grok、Perplexity 等支持站点的输入框旁提供轻量入口，自动避让输入框。
 - **Skill 驱动增强**：内置通用、代码、审查、文档、调试、算法解释等 Prompt Engineering Skill，可选择默认 Skill，也支持 GitHub、JSON/YAML 和粘贴文本导入。
 - **意图追问模式**：信息不足时先提出针对性问题，再把回答带入下一轮增强。
 - **多 Provider**：支持 OpenAI、Anthropic、Google Gemini、Azure OpenAI、Ollama、DeepSeek、Kimi、通义千问、智谱、硅基流动、火山方舟和自定义兼容端点。

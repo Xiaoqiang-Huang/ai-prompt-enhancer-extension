@@ -1,6 +1,6 @@
-﻿import { collectChatMessages, exportConversation } from '@/content/chat-export'
+import { collectChatMessages, exportConversation } from '@/content/chat-export'
 import { detectSensitiveText } from '@/content/detector/sensitive-detector'
-import { findBestEditableAdapter, isAiChatHost, resolveEditableAdapter } from '@/content/detector/input-detector'
+import { findBestEditableAdapter, isAiChatHost, resolveAiChatAdapter } from '@/content/detector/input-detector'
 import { FloatingButton } from '@/content/overlay/floating-button'
 import { PreviewDialog } from '@/content/overlay/preview-dialog'
 import { QuickActionPanel } from '@/content/overlay/quick-action-panel'
@@ -142,7 +142,7 @@ class PromptEnhancerContentApp {
     }
 
     const nextAdapter =
-      resolveEditableAdapter(document.activeElement) ??
+      resolveAiChatAdapter(document.activeElement) ??
       (this.adapter && this.adapter.getElement().isConnected ? this.adapter : null) ??
       findBestEditableAdapter(document)
 
@@ -170,7 +170,7 @@ class PromptEnhancerContentApp {
     if (event.target instanceof HTMLElement && event.target.closest('[data-ape-root]')) {
       return
     }
-    const nextAdapter = resolveEditableAdapter(event.target)
+    const nextAdapter = resolveAiChatAdapter(event.target)
     if (!nextAdapter || !this.launcherEnabled) {
       this.scheduleSync(80)
       return
@@ -192,7 +192,7 @@ class PromptEnhancerContentApp {
       return
     }
     if (event.target instanceof HTMLElement && event.target.closest('[data-ape-root]')) return
-    const nextAdapter = resolveEditableAdapter(event.target)
+    const nextAdapter = resolveAiChatAdapter(event.target)
     if (nextAdapter) {
       this.adapter = nextAdapter
       const text = this.adapter.getText()
@@ -301,7 +301,7 @@ class PromptEnhancerContentApp {
       this.hideLauncherControls()
       return
     }
-    const activeAdapter = resolveEditableAdapter(document.activeElement) ?? findBestEditableAdapter(document)
+    const activeAdapter = resolveAiChatAdapter(document.activeElement) ?? findBestEditableAdapter(document)
     if (activeAdapter) {
       this.adapter = activeAdapter
     }

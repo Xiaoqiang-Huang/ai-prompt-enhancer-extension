@@ -17,6 +17,7 @@ import { templateStore } from '@/core/storage/template-store'
 import { appError } from '@/shared/errors'
 import { STORAGE_KEYS } from '@/shared/constants'
 import { logger } from '@/shared/logger'
+import { isSupportedAiChatHost } from '@/shared/supported-sites'
 import type {
   ClarificationAnswer,
   ClarificationQuestion,
@@ -33,13 +34,7 @@ import type {
 } from '@/shared/types'
 
 const RESTRICTED_URL_PREFIXES = ['chrome://', 'edge://', 'about:', 'chrome-extension://']
-const SUPPORTED_PAGE_HOSTS = new Set([
-  'chatgpt.com',
-  'chat.openai.com',
-  'claude.ai',
-  'gemini.google.com',
-  'chat.deepseek.com',
-  'copilot.microsoft.com',
+const SUPPORTED_UTILITY_HOSTS = new Set([
   'github.com',
   'mail.google.com',
   'docs.google.com',
@@ -98,7 +93,8 @@ const isInjectableUrl = (url?: string): boolean =>
 const isSupportedPageUrl = (url?: string): boolean => {
   if (!isInjectableUrl(url)) return false
   try {
-    return SUPPORTED_PAGE_HOSTS.has(new URL(url as string).hostname)
+    const hostname = new URL(url as string).hostname
+    return isSupportedAiChatHost(hostname) || SUPPORTED_UTILITY_HOSTS.has(hostname)
   } catch {
     return false
   }

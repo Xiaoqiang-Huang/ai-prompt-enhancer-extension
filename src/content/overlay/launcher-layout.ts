@@ -1,3 +1,4 @@
+import { isSupportedAiChatHost, normalizeHostname } from '@/shared/supported-sites'
 import type { LauncherPosition } from '@/shared/types'
 
 const SITE_CONTAINER_SELECTORS: Array<{
@@ -48,6 +49,17 @@ const SITE_CONTAINER_SELECTORS: Array<{
       '[data-testid*="composer"]',
       '[class*="composer"]',
       '[class*="input"]',
+      'form',
+    ],
+  },
+  {
+    match: (hostname) => isSupportedAiChatHost(hostname),
+    selectors: [
+      '[data-testid*="composer"]',
+      '[class*="composer"]',
+      '[class*="chat-input"]',
+      '[class*="input-area"]',
+      '[role="form"]',
       'form',
     ],
   },
@@ -144,7 +156,8 @@ export const resolveLauncherAnchorRect = (
   // editable frame instead of chasing a moving form/container.
   if (hasInternalScroll(element)) return editableRect
 
-  const rule = SITE_CONTAINER_SELECTORS.find((item) => item.match(hostname))
+  const normalizedHostname = normalizeHostname(hostname)
+  const rule = SITE_CONTAINER_SELECTORS.find((item) => item.match(normalizedHostname))
   const selectors = rule
     ? [...rule.selectors, ...FALLBACK_CONTAINER_SELECTORS.split(', ')]
     : FALLBACK_CONTAINER_SELECTORS.split(', ')

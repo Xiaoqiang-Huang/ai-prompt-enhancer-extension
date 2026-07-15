@@ -1,4 +1,4 @@
-﻿import { findBestEditableAdapter, isAiChatHost } from '@/content/detector/input-detector'
+import { findBestEditableAdapter, isAiChatHost, resolveAiChatAdapter } from '@/content/detector/input-detector'
 
 const mockVisibleRect = (element: Element, top = 120, left = 120) => {
   Object.defineProperty(element, 'getBoundingClientRect', {
@@ -70,6 +70,30 @@ describe('findBestEditableAdapter', () => {
     expect(adapter?.getElement()).toBe(claude)
   })
 
+  it('detects the Doubao composer instead of its search input', () => {
+    document.body.innerHTML = `
+      <input id="history-search" type="search" placeholder="搜索历史对话" />
+      <textarea id="doubao-input" placeholder="输入消息"></textarea>
+    `
+
+    const search = document.getElementById('history-search') as HTMLInputElement
+    const composer = document.getElementById('doubao-input') as HTMLTextAreaElement
+    mockVisibleRect(search, 40, 40)
+    mockVisibleRect(composer, 180, 180)
+
+    expect(findBestEditableAdapter(document, 'www.doubao.com')?.getElement()).toBe(composer)
+    expect(resolveAiChatAdapter(search, 'www.doubao.com')).toBeNull()
+    expect(resolveAiChatAdapter(composer, 'www.doubao.com')?.getElement()).toBe(composer)
+  })
+
+  it('does not attach to a conversation search field on an AI site', () => {
+    document.body.innerHTML = '<input id="conversation-search" type="search" placeholder="Search conversations" />'
+    const input = document.getElementById('conversation-search') as HTMLInputElement
+    mockVisibleRect(input, 100, 100)
+
+    expect(findBestEditableAdapter(document, 'grok.com')).toBeNull()
+    expect(resolveAiChatAdapter(input, 'grok.com')).toBeNull()
+  })
   it('does not attach to generic inputs on non-AI hosts', () => {
     document.body.innerHTML = '<input id="go-to-file" type="search" placeholder="Go to file" />'
     const input = document.getElementById('go-to-file') as HTMLInputElement
@@ -84,6 +108,10 @@ describe('findBestEditableAdapter', () => {
     expect(isAiChatHost('chat.deepseek.com')).toBe(true)
     expect(isAiChatHost('gemini.google.com')).toBe(true)
     expect(isAiChatHost('copilot.microsoft.com')).toBe(true)
+    expect(isAiChatHost('www.doubao.com')).toBe(true)
+    expect(isAiChatHost('kimi.com')).toBe(true)
+    expect(isAiChatHost('grok.com')).toBe(true)
+    expect(isAiChatHost('www.perplexity.ai')).toBe(true)
     expect(isAiChatHost('mail.google.com')).toBe(false)
   })
 })
